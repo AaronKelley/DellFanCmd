@@ -12,7 +12,7 @@ void unloadDriver();
 // Main program begins here.
 int main(int argc, char* argv[])
 {
-    cout << "DellFanCmd 1.0.0\n";
+    cout << "DellFanCmd 1.0.1\n";
     cout << "By Aaron Kelley\n";
     cout << "Licensed under GPLv3\n";
     cout << "Source code available at https://github.com/AaronKelley/DellFanCmd\n\n";
@@ -32,6 +32,9 @@ int main(int argc, char* argv[])
         bool enableEcFanControl = false;
         bool setFansTo100 = false;
         bool useAlternateCommand = false;
+		bool setFanLevel = false;
+		ULONG fanSelection = 0;
+		ULONG fanLevel = 0;
 
         // Figure out what was requested.
         if (strcmp(argv[1], "ec-disable") == 0)
@@ -58,12 +61,90 @@ int main(int argc, char* argv[])
             disableEcFanControl = true;
             useAlternateCommand = true;
         }
-        else if (strcmp(argv[1], "ec-enable-alt") == 0)
-        {
-            enableEcFanControl = true;
-            useAlternateCommand = true;
-        }
-        else
+		else if (strcmp(argv[1], "ec-enable-alt") == 0)
+		{
+			enableEcFanControl = true;
+			useAlternateCommand = true;
+		}
+		else if (strcmp(argv[1], "fan1-level0") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN1;
+			fanLevel = DELL_SMM_IO_FAN_LV0;
+		}
+		else if (strcmp(argv[1], "fan1-level1") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN1;
+			fanLevel = DELL_SMM_IO_FAN_LV1;
+		}
+		else if (strcmp(argv[1], "fan1-level2") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN1;
+			fanLevel = DELL_SMM_IO_FAN_LV2;
+		}
+		else if (strcmp(argv[1], "fan2-level0") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN2;
+			fanLevel = DELL_SMM_IO_FAN_LV0;
+		}
+		else if (strcmp(argv[1], "fan2-level1") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN2;
+			fanLevel = DELL_SMM_IO_FAN_LV1;
+		}
+		else if (strcmp(argv[1], "fan2-level2") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN2;
+			fanLevel = DELL_SMM_IO_FAN_LV2;
+		}
+		else if (strcmp(argv[1], "fan1-level0-alt") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN1;
+			fanLevel = DELL_SMM_IO_FAN_LV0;
+			useAlternateCommand = true;
+		}
+		else if (strcmp(argv[1], "fan1-level1-alt") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN1;
+			fanLevel = DELL_SMM_IO_FAN_LV1;
+			useAlternateCommand = true;
+		}
+		else if (strcmp(argv[1], "fan1-level2-alt") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN1;
+			fanLevel = DELL_SMM_IO_FAN_LV2;
+			useAlternateCommand = true;
+		}
+		else if (strcmp(argv[1], "fan2-level0-alt") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN2;
+			fanLevel = DELL_SMM_IO_FAN_LV0;
+			useAlternateCommand = true;
+		}
+		else if (strcmp(argv[1], "fan2-level1-alt") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN2;
+			fanLevel = DELL_SMM_IO_FAN_LV1;
+			useAlternateCommand = true;
+		}
+		else if (strcmp(argv[1], "fan2-level2-alt") == 0)
+		{
+			setFanLevel = true;
+			fanSelection = DELL_SMM_IO_FAN2;
+			fanLevel = DELL_SMM_IO_FAN_LV2;
+			useAlternateCommand = true;
+		}
+		else
         {
             usage();
             exit(3);
@@ -127,6 +208,20 @@ int main(int argc, char* argv[])
 
             cout << " ...Success.\n";
         }
+		else if (setFanLevel)
+		{
+			cout << "Attempting to set the fan level...\n";
+			ULONG command = !useAlternateCommand ? DELL_SMM_IO_ENABLE_FAN_CTL1 : DELL_SMM_IO_ENABLE_FAN_CTL2;
+			int result = dell_smm_io_set_fan_lv(fanSelection, fanLevel);
+			if (result == -1)
+			{
+				cerr << "Failed.\n";
+				unloadDriver();
+				exit(1);
+			}
+
+			cout << " ...Success.\n";
+		}
 
         // Unload driver.
         unloadDriver();
@@ -143,9 +238,17 @@ void usage()
     cout << "  ec-disable              Turn EC fan control off (fan goes to manual control)\n";
     cout << "  ec-disable-nofanchg     Turn EC fan control off and don't change the fan speed\n";
     cout << "  ec-enable               Turn EC fan control on (fan goes to automatic control)\n";
-    cout << "  ec-disable-alt          Turn EC fan control off, alternate method\n";
-    cout << "  ec-disable-alt-nofanchg Turn EC fan control off and don't change the fan speed, alternate method\n";
-    cout << "  ec-enable-alt           Turn EC fan control on, alternate method\n";
+	cout << "\n";
+	cout << "After EC fan control is off, you may use:\n";
+	cout << "  fan1-level0             Set fan 1 to level 0 (0%)\n";
+	cout << "  fan1-level1             Set fan 1 to level 1 (50%)\n";
+	cout << "  fan1-level2             Set fan 1 to level 2 (100%)\n";
+	cout << "  fan2-level0             Set fan 2 to level 0 (0%)\n";
+	cout << "  fan2-level1             Set fan 2 to level 1 (50%)\n";
+	cout << "  fan2-level2             Set fan 2 to level 2 (100%)\n";
+	cout << "\n";
+	cout << "Append \"-alt\" to any command to attempt alternate fan control method.\n";
+	cout << "(Example: ec-disable-alt)\n";
 }
 
 // Load the SMM IO driver.
