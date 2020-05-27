@@ -70,8 +70,13 @@ ULONG _stdcall dell_smm_io(ULONG cmd, ULONG data)
 
 ULONG dell_smm_io_set_fan_lv(ULONG fan_no, ULONG lv)
 {
-    ULONG arg = (lv<<8) | fan_no;
+    ULONG arg = (lv << 8) | fan_no;
     return dell_smm_io(DELL_SMM_IO_SET_FAN_LV, arg);
+}
+
+ULONG dell_smm_io_get_fan_rpm(ULONG fan_no)
+{
+    return dell_smm_io(DELL_SMM_IO_GET_FAN_RPM, fan_no);
 }
 
 #ifdef __cplusplus

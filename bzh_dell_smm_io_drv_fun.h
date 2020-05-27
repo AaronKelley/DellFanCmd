@@ -47,6 +47,7 @@ void display_error(ULONG errorcode);
 ULONG _stdcall dell_smm_io(ULONG cmd, ULONG data);
 
 ULONG dell_smm_io_set_fan_lv(ULONG fan_no, ULONG lv);
+ULONG dell_smm_io_get_fan_rpm(ULONG fan_no);
 
 #ifdef __cplusplus
 }
